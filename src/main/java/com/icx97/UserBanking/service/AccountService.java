@@ -5,7 +5,9 @@ import com.icx97.UserBanking.dto.AccountDTO;
 import com.icx97.UserBanking.exception.CustomException;
 import com.icx97.UserBanking.mapper.AccountMapper;
 import com.icx97.UserBanking.model.Account;
+import com.icx97.UserBanking.model.User;
 import com.icx97.UserBanking.repository.AccountRepository;
+import com.icx97.UserBanking.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +24,15 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper = AccountMapper.INSTANCE;
+    private final UserRepository userRepository;
 
     public AccountDTO createAccount(AccountDTO accountDTO) {
         logger.info("Creating Account: {}", accountDTO.getAccountNumber());
         Account account = accountMapper.accountDTOToAccount(accountDTO);
+        User user = userRepository.findById(accountDTO.getUserId())
+                .orElseThrow(() -> new CustomException("User not found with id: " + accountDTO.getUserId()));
+
+        account.setUser(user);
         Account savedAccount = accountRepository.save(account);
         return accountMapper.accountToAccountDTO(savedAccount);
     }
